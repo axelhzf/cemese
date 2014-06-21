@@ -1,0 +1,25 @@
+extend ../layout
+block content
+  h1 Model #{Model.name} - #{item.id}
+  form(method="POST", action="")
+    div #{JSON.stringify(rawAttributes)}
+    each attribute, attributeName  in Model.rawAttributes
+      if attribute.ctype === "text"
+        +input-text(item, attributeName, attribute.label)
+      if attribute.ctype === "markdown"
+        +input-markdown(item, attributeName, attribute.label)
+
+    each association, associationName in Model.associations
+      div #{association.options.label} #{JSON.stringify(item.values)}
+
+      select(name="#{associationName}")
+        option(value="")
+        each associationItem in associationItems[association.target.name]
+          if item[associationName] === associationItem.id
+            option(selected, value="#{associationItem.id}") #{associationItem.title}
+          else
+            option(value="#{associationItem.id}") #{associationItem.title}
+
+
+    +submit("Save")
+

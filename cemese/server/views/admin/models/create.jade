@@ -1,0 +1,14 @@
+extend ../layout
+block content
+  h1 New Model #{Model.name}
+  form(method="POST", action="")
+    each attribute, attributeName  in Model.rawAttributes
+      if attribute.ctype === "text"
+        +input-text(item, attributeName, attribute.label)
+      if attribute.ctype === "markdown"
+        +input-markdown(item, attributeName, attribute.label)
+
+    +submit("Save")
+
+
+

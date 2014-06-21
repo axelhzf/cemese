@@ -1,0 +1,10 @@
+mixin input-text(obj, attr, label)
+  if _(flash.error).safe(attr)
+    .form-group.has-error
+      label #{label}
+      input.form-control(type="text", name="#{attr}", value="#{_(obj).safe(attr, '')}")
+      span.help-block #{_(flash.error).safe(attr)}
+  else
+    .form-group
+      label #{label}
+      input.form-control(type="text", name="#{attr}", value="#{_(obj).safe(attr, '')}")

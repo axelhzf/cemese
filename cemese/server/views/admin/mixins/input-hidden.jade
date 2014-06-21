@@ -1,0 +1,2 @@
+mixin input-hidden(obj, attr)
+  input(type="hidden", name="#{attr}", value="#{_(obj).safe(attr, '')}")

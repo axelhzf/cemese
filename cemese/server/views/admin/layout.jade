@@ -1,0 +1,28 @@
+include mixins/all
+
+doctype html
+html
+  head
+    title cemese - admin panel
+    link(rel="icon", type="image/png", href="/assets/favicon.ico")
+    link(rel='stylesheet', href="http://fonts.googleapis.com/css?family=Bree+Serif")
+    link(rel='stylesheet', href="/assets/style/main.css")
+
+    link(rel='stylesheet', href="/assets/libs/codemirror/lib/codemirror.css")
+    link(rel='stylesheet', href="/assets/style/main.css")
+
+    block head
+  body(class="admin")
+    .left-menu
+      ul
+        each menuItem in menuItems
+          li: a(href=menuItem.link) #{menuItem.title}
+    .content
+      .content-block
+        block content
+
+
+    script(src="/assets/libs/jquery/jquery.js")
+    script(src="/assets/libs/marked/marked.js")
+    script(src="/assets/libs/codemirror/lib/codemirror.js")
+    script(src="/assets/client/markdownEditor.js")

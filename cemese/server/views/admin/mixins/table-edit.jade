@@ -1,0 +1,17 @@
+mixin table-edit(objs, attrs, labels)
+  a.btn.btn-default(href="create") Crear
+  table.table
+    thead
+      tr
+        each label in labels
+          th #{label}
+        th
+    tbody
+      each obj in objs
+        tr
+          each attr in attrs
+            td #{_(obj).safe(attr)}
+          td
+            a(href="edit/#{obj.id}") Editar
+            | |
+            a(href="delete/#{obj.id}") Borrar

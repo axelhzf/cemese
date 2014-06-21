@@ -1,0 +1,10 @@
+mixin textarea(obj, attr, label)
+  if _(flash.error).safe(attr)
+    .form-group.has-error
+      label #{label}
+      textarea.form-control(name="#{attr}", rows="5") #{_(obj).safe(attr, '')}
+      span.help-block #{_(flash.error).safe(attr)}
+  else
+    .form-group
+      label #{label}
+      textarea.form-control(name="#{attr}", rows="5") #{_(obj).safe(attr, '')}

@@ -1,0 +1,12 @@
+extend ../layout
+block content
+  h1 Model #{Model.name}
+
+  div
+    a.btn.btn-default(href="/admin/models/#{Model.name}/create") Create
+
+  table.table
+    tbody
+    each item in items
+      tr
+        td: a(href="/admin/models/#{Model.name}/#{item.id}/edit") #{item.title}

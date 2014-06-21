@@ -1,0 +1,6 @@
+mixin input-markdown(obj, attr, label)
+  .markdown-input.form-group
+    div: label.markdown-input-label #{label}
+    .markdown-input-editor
+      textarea(name="#{attr}") #{_(obj).safe(attr, '')}
+    .markdown-input-preview
