@@ -1,0 +1,14 @@
+mixin select(all, active, name, valueId, labelId)
+  select(name="#{name}")
+    option(value="")
+
+    - activeItemId = _(active).safe(valueId)
+
+    each item in all
+      - itemValue = _(item).safe(valueId)
+      - itemLabel = _(item).safe(labelId)
+
+      if activeItemId === itemValue
+        option(selected, value="#{itemValue}") #{itemLabel}
+      else
+        option(value="#{itemValue}") #{itemLabel}

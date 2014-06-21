@@ -29,9 +29,11 @@ co(function* () {
     //console.log(a1.values, b1.values);
 
 
-    console.log(TableB.associations);
     yield b1.setMyTable(a1);
 
+    var myTable = yield b1.getMyTable();
+    console.log(myTable.values);
+    console.log(b1);
 
 
   } catch(e) {

@@ -3,7 +3,7 @@ var models = require("../models");
 
 module.exports = function (app) {
 
-  function* layout(ctx) {
+  function* layout (ctx) {
     ctx.menuItems = models.all.map(function (model) {
       return {
         title: model.name,
@@ -32,80 +32,24 @@ module.exports = function (app) {
   });
 
   app.get("/admin/models/:modelName/create", function *() {
-    var modelName = this.params.modelName;
-    var Model = models[modelName];
-
-    var item = Model.build();
-    var ctx = {
-      Model: Model,
-      item: item
-    };
+    var ctx = yield prepareForm.call(this);
     yield layout(ctx);
     yield this.render("admin/models/create", ctx);
   });
 
   app.post("/admin/models/:modelName/create", function *() {
-    var modelName = this.params.modelName;
-    var Model = models[modelName];
-    var item = this.request.body;
-    try {
-      yield Model.create(item);
-      this.redirect("/admin/models/" + modelName)
-    } catch(e) {
-      this.flash = {error: error, item: item};
-      this.redirect(this.request.path);
-    }
+    yield createOrUpdateModel.call(this);
   });
 
   app.get("/admin/models/:modelName/:id/edit", function *() {
-    var modelName = this.params.modelName;
-    var id = this.params.id;
-    var Model = models[modelName];
-
-    var associationItems = {};
-
-    for (var key in Model.associations) {
-      var value = Model.associations[key];
-      var AssociationModelName = value.target.name;
-      var AssociationModel = models[AssociationModelName];
-      associationItems[AssociationModelName] = yield AssociationModel.findAll();
-    }
-
-    var item = yield Model.find(id);
-    var ctx = {
-      Model: Model,
-      item: item,
-      associationItems: associationItems
-    };
+    var ctx = yield prepareForm.call(this);
     yield layout(ctx);
     yield this.render("admin/models/edit", ctx);
   });
 
   app.post("/admin/models/:modelName/:id/edit", function *() {
-    var modelName = this.params.modelName;
     var id = this.params.id;
-    var Model = models[modelName];
-
-    try {
-
-      var model = yield Model.find(id);
-
-      var attributeNames = _.without(_.keys(Model.rawAttributes), "id", "createdAt", "updatedAt");
-      var attributes = _.pick(this.request.body, attributeNames);
-      yield model.updateAttributes(attributes);
-
-      for (var associationName in Model.associations) {
-        var association = Model.associations[associationName];
-        var valueId = this.request.body[associationName];
-        var value = yield association.target.find(valueId);
-        model[association.accessors.set](value);
-      }
-
-      this.redirect("/admin/models/" + modelName)
-    } catch(error) {
-      this.flash = {error: error};
-      this.redirect(this.request.path);
-    }
+    yield createOrUpdateModel.call(this, id);
   });
 
   app.get("/admin/models/:modelName/:id/delete", function *() {
@@ -128,12 +72,78 @@ module.exports = function (app) {
     var id = this.params.id;
     var Model = models[modelName];
     try {
-      yield Model.destroy({id : id});
+      yield Model.destroy({id: id});
       this.redirect("/admin/models/" + modelName)
-    } catch(error) {
+    } catch (error) {
       this.flash = {error: error, item: item};
       this.redirect(this.request.path);
     }
   });
+
+  function *prepareForm () {
+    var modelName = this.params.modelName;
+    var id = this.params.id;
+    var Model = models[modelName];
+
+    var associationItems = {};
+
+    var item;
+    if (id) {
+      item = yield Model.find(id);
+    }
+
+    for (var key in Model.associations) {
+      var association = Model.associations[key];
+      var associationModelName = association.target.name;
+      var associationModel = models[associationModelName];
+
+      var associationItem = {};
+
+      associationItem.all = yield associationModel.findAll();
+      if (item) {
+        associationItem.selected = yield item[association.accessors.get]();
+      }
+
+      associationItems[associationModelName] = associationItem;
+    }
+
+    var ctx = {
+      Model: Model,
+      item: item,
+      associationItems: associationItems
+    };
+    return ctx;
+  }
+
+  function* createOrUpdateModel (id) {
+    var modelName = this.params.modelName;
+    var Model = models[modelName];
+
+    try {
+
+      var attributeNames = _.without(_.keys(Model.rawAttributes), "id", "createdAt", "updatedAt");
+      var attributes = _.pick(this.request.body, attributeNames);
+
+      var model;
+      if (id) {
+        model = yield Model.find(id);
+        yield model.updateAttributes(attributes);
+      } else {
+        model = yield Model.create(attributes);
+      }
+
+      for (var associationName in Model.associations) {
+        var association = Model.associations[associationName];
+        var valueId = this.request.body[associationName];
+        var value = yield association.target.find(valueId);
+        model[association.accessors.set](value);
+      }
+
+      this.redirect("/admin/models/" + modelName)
+    } catch (error) {
+      this.flash = {error: error};
+      this.redirect(this.request.path);
+    }
+  }
 
 }
